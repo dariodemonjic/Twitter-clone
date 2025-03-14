@@ -12,6 +12,6 @@ export const generateTokenAndSetCookie = (userId, res) => {
         httpOnly: true,   //prevents XSS attacks cross-site scripting attacks
         sameSite: "strict",   //CSRF attacks cross-site request forgery attacks
         secure: process.env.NODE_ENV !== "developlent", 
-
+//Once the cookie is set, the browser automatically includes it in every subsequent request to the same domain, so you don't have to manually handle the token on the client side.
     })
 }

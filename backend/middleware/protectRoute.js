@@ -1,6 +1,8 @@
 import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 
+//ensures that only authenticated users (users with a valid token) can access certain routes.
+//verifying if  a JSON Web Token (JWT) is  stored in a cookie.
 export const protectRoute = async (req, res, next ) => {
 
     try {
@@ -20,7 +22,7 @@ export const protectRoute = async (req, res, next ) => {
             return res.status(404).json({error: "User not found"});
         }
 
-        req.user = user;
+        req.user = user;  //If the user is authenticated, attach the user's information to the request object (req.user) to make it avalinble to next function/route and allow the request to proceed.
         next();
         
     } catch (error) {

@@ -17,7 +17,7 @@ export const signup = async (req, res ) =>{
             return res.status(400).json({error: "Username is already taken"});
         }
 
-        const existingEmail = await User.findOne({email}) // ({username:username}) same syntax , just shortented it
+        const existingEmail = await User.findOne({email}) 
         if(existingEmail){
             return res.status(400).json({error: "Email is already taken"});
         }
@@ -36,7 +36,7 @@ export const signup = async (req, res ) =>{
             email,
             password: hashedPassword
         })
-        console.log("USERDATA",newUser);
+        
         if(newUser){
             generateTokenAndSetCookie(newUser._id, res);
             await newUser.save();
