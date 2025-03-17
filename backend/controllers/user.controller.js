@@ -96,7 +96,7 @@ export const updateUserProfile =  async (req, res ) => {
     const {fullname, email, username, currentPassword, newPassword, bio, link} = req.body;
     let {profileImg, coverImg} = req.body;
 
-    const userId = req.user_id;
+    const userId = req.user._id;
 
     try {
         const user = await User.findById(userId);
@@ -108,7 +108,7 @@ export const updateUserProfile =  async (req, res ) => {
 
         if(currentPassword && newPassword){
             const isMatch = await bcrypt.compare(currentPassword, user.password); 
-            if(!match) return status(400).json({error:"Current passwrod is incorrect"});
+            if(!isMatch) return res.status(400).json({error:"Current passwrod is incorrect"});
             if(newPassword.length < 6 ) {
                 return res.status(400).json({error:"Passwrod must be at least 6 charatcers long"});
             }
@@ -117,20 +117,22 @@ export const updateUserProfile =  async (req, res ) => {
             user.password = await bcrypt.hash(newPassword, salt);
         }
 
+        //add email check logic later
+
         if(profileImg) {
 
             if(user.profileImg){
                 cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]); //prob can be done smoother
-            }
-            const uploadedResponse = await cloudinary.uploader.upload(profileImg) ; 
+            } 
+           const uploadedResponse = await cloudinary.uploader.upload(profileImg) ; 
             profileImg = uploadedResponse.secure_url;
             
         }
         if(coverImg) { 
             if(user.coverImg){
-                cloudinary.uploader.destroy(coverImg);
+                cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]); 
             }
-            uploadedResponse = cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
+            const uploadedResponse = await cloudinary.uploader.upload(coverImg) ; 
             coverImg = uploadedResponse.secure_url;
         }
 
@@ -150,6 +152,7 @@ export const updateUserProfile =  async (req, res ) => {
 
         
     } catch (error) {
+        res.status(500).json({error: error.message});
         
     }
 
