@@ -148,10 +148,10 @@ export const getAllPosts = async (req, res) => {
         //latest post at the top, get all info from user with populate so we can use username profile img in our frontend
         //replace that user ID in the Posts collection with the full user information from the Users collection with POPULATE
         if(posts.length === 0){
-            return res.status(200).json({message: "[] Threre are no posts"});
+            return res.status(200).json([]);
         }
 
-        res.status(200).json({posts})
+        res.status(200).json(posts);
         
      } catch (error) {
         console.log("Error in getAllPosts in Post controller");
