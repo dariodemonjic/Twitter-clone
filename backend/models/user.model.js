@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     fullname:{
         type:String,
         required:true,
+        alias: "fullName"  // Now accepts both spellings
     },
     password:{
         type:String,
