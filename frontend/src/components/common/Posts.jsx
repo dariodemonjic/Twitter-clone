@@ -5,16 +5,29 @@ import { useMutation } from "@tanstack/react-query";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-const Posts = () => {
+const Posts = ({feedType}) => {
+
+	const getPostEndpoint = () => {
+		switch (feedType) {
+			case "forYou":
+				return "/api/posts/all";
+			case "following" : 
+				return "/api/posts/following";
+			default: 
+				return "/api/posts/all";
+		}
+	};
+
+	const POST_ENDPOINT = getPostEndpoint();
 
 	const {data: posts, isError, isLoading, error} = useQuery({
 		queryKey: ["posts"],
 		queryFn: async () => {
 			try {
-				const res = await fetch("/api/posts/all");
+				const res = await fetch(POST_ENDPOINT);
 				const data = await res.json();
 				if(!res.ok) throw new Error(data.error) || "Something went wrong";
-			
+				console.log("Posts data: ", posts);
 				return data;
 				
 			} catch (error) {
@@ -26,7 +39,6 @@ const Posts = () => {
 
 	return (
 		<>
-		{	console.log("Posts data", posts)}
 			{isLoading && (
 				<div className='flex flex-col justify-center'>
 					<PostSkeleton />
