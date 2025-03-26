@@ -2,23 +2,56 @@ import { CiImageOn } from "react-icons/ci";
 import { BsEmojiSmileFill } from "react-icons/bs";
 import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const CreatePost = () => {
 	const [text, setText] = useState("");
 	const [img, setImg] = useState(null);
-
 	const imgRef = useRef(null);
 
-	const isPending = false;
-	const isError = false;
+	const {data} = useQuery({queryKey: ["authUser"]});
+	const queryClient = useQueryClient();
 
-	const data = {
-		profileImg: "/avatars/boy1.png",
-	};
+	const {mutate: createPostMutation, isError, error, isPending} = useMutation({
+		mutationFn:  async () => {
+			try {
+				const res = await fetch ("/api/posts/create" , {
+					method: "POST",
+					headers: {
+						"Content-type" : "application/json",
+					},
+					body: JSON.stringify({text, img}),
+				
+				});
+				const data = await res.json();
+				if(!res.ok) throw new Error(data.error || "Something went wrrong");
+				console.log(data);
+				return data;
+
+				
+			} catch (error) {
+				throw new Error (error);
+			}
+
+		},
+		onSuccess: () => {
+			setImg(null);
+			setText("");
+			queryClient.invalidateQueries({queryKey: ["posts"]});
+			toast.success("Post created successfully")
+			
+		}
+
+	})
+
+	
+
+
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		alert("Post created successfully");
+		createPostMutation();
 	};
 
 	const handleImgChange = (e) => {
@@ -36,7 +69,7 @@ const CreatePost = () => {
 		<div className='flex p-4 items-start gap-4 border-b border-gray-700'>
 			<div className='avatar'>
 				<div className='w-8 rounded-full'>
-					<img src={data.profileImg || "/avatar-placeholder.png"} />
+					<img src={data.profileImage || "/avatar-placeholder.png"} />
 				</div>
 			</div>
 			<form className='flex flex-col gap-2 w-full' onSubmit={handleSubmit}>
@@ -72,7 +105,7 @@ const CreatePost = () => {
 						{isPending ? "Posting..." : "Post"}
 					</button>
 				</div>
-				{isError && <div className='text-red-500'>Something went wrong</div>}
+				{isError && <div className='text-red-500'>{error.message}</div>}
 			</form>
 		</div>
 	);
