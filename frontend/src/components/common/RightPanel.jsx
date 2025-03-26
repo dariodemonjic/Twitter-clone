@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
 import { USERS_FOR_RIGHT_PANEL } from "../../utils/db/dummy";
 import { useMutation, useQuery, } from "@tanstack/react-query";
+import useFollow from '../../hooks/useFollow';
+import LoadingSpinner from "./LoadingSpinner";
 
 const RightPanel = () => {
 
@@ -21,6 +23,8 @@ const RightPanel = () => {
 		}
 
 	})
+
+	const {followMutation, isPending} = useFollow();
 
 	if(suggestedUsersData?.length === 0 ) return <div className='md:W-64 w-0'> </div>; //if no users to follow make sure that div doesnt strech, keep the width of 64
 
@@ -61,9 +65,12 @@ const RightPanel = () => {
 								<div>
 									<button
 										className='btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm'
-										onClick={(e) => e.preventDefault()}
+										onClick={(e) => {
+											e.preventDefault();
+											followMutation(user._id);
+										}}
 									>
-										Follow
+										{isPending ? <LoadingSpinner size="sm" /> : "Follow"}
 									</button>
 								</div>
 							</Link>
