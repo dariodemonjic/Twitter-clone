@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
+import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post, feedType}) => {
 	const [comment, setComment] = useState("");
@@ -100,17 +101,20 @@ const Post = ({ post, feedType}) => {
 				if (!oldData || !Array.isArray(oldData)) return oldData;
 				
 				return oldData.map((p) => {
-					if (p._id === post._id) {
-						return { 
-							...p, 
-							comments: [...p.comments, {
-								...newComment,
-								user: authUser // Add current user info if not included in response
-							}] 
-						};
+					if (p._id === post._id) {  // Find the post we commented on
+					  return { 
+						...p,  // Keep all existing post data
+						comments: [  // Update just the comments array
+						  ...p.comments,  // Keep existing comments
+						  {  // Add our new comment
+							...newComment,  // Data from server
+							user: authUser  // Add user data if missing
+						  }
+						] 
+					  };
 					}
-					return p;
-				});
+					return p;  // Leave other posts unchanged
+				  });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 			});
 		},
 		onError : (error) => {
@@ -123,7 +127,7 @@ const Post = ({ post, feedType}) => {
 
 	const isMyPost = authUser._id === post.user._id;
 
-	const formattedDate = "1h";
+	const formattedDate = formatPostDate(post.createdAt);
 
 
 
