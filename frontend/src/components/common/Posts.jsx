@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-const Posts = ({feedType}) => {
+const Posts = ({feedType, username, userId}) => {
 
 	const getPostEndpoint = () => {
 		switch (feedType) {
@@ -13,6 +13,10 @@ const Posts = ({feedType}) => {
 				return "/api/posts/all";
 			case "following" : 
 				return "/api/posts/following";
+			case "posts" : 
+				return `/api/posts/user/${username}`;
+			case "like" : 
+			return `/api/posts/likedPosts/${userId}`;
 			default: 
 				return "/api/posts/all";
 		}
@@ -21,7 +25,7 @@ const Posts = ({feedType}) => {
 	const POST_ENDPOINT = getPostEndpoint();
 
 	const {data: posts, isError, isLoading, error, isRefetching} = useQuery({
-		queryKey: ["posts", feedType],  //Auto-refetches when feedType changes instead of ussing useEffect like i would generally
+		queryKey: ["posts", feedType, username, userId],  //Auto-refetches when feedType changes instead of ussing useEffect like i would generally
 		queryFn: async () => {
 			try {
 				const res = await fetch(POST_ENDPOINT);
