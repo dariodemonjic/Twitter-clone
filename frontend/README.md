@@ -25,5 +25,6 @@ CLOUDINARY_API_SECRET=...
 
 BUILD THE APP: 
 npm run build
-Start the app
+
+START THE APP
 npm start
