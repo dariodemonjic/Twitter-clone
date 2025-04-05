@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 
 const Posts = ({feedType, username, userId}) => {
 
+
 	const getPostEndpoint = () => {
 		switch (feedType) {
 			case "forYou":
@@ -15,8 +16,8 @@ const Posts = ({feedType, username, userId}) => {
 				return "/api/posts/following";
 			case "posts" : 
 				return `/api/posts/user/${username}`;
-			case "like" : 
-			return `/api/posts/likedPosts/${userId}`;
+			case "likes" : 
+				return `/api/posts/likedPosts/${userId}`;
 			default: 
 				return "/api/posts/all";
 		}
@@ -28,6 +29,7 @@ const Posts = ({feedType, username, userId}) => {
 		queryKey: ["posts", feedType, username, userId],  //Auto-refetches when feedType changes instead of ussing useEffect like i would generally
 		queryFn: async () => {
 			try {
+				console.log(feedType);
 				const res = await fetch(POST_ENDPOINT);
 				const data = await res.json();
 				if(!res.ok) throw new Error(data.error) || "Something went wrong";
@@ -56,7 +58,7 @@ const Posts = ({feedType, username, userId}) => {
 			{!isLoading && !isRefetching && posts && (
 				<div>
 					{posts.map((post) => (
-						<Post key={post._id} post={post} feedType={feedType} />
+						<Post key={post._id} post={post} username={username} userId={userId} feedType={feedType} />
 					))}
 				</div>
 			)}

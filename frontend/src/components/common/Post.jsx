@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
 import { formatPostDate } from "../../utils/date";
 
-const Post = ({ post, feedType}) => {
+const Post = ({ post, feedType, username, userId}) => {
 	const [comment, setComment] = useState("");
 	const {data:authUser} = useQuery ({queryKey: ["authUser"]}); //get autethicated user
 
@@ -62,20 +62,21 @@ const Post = ({ post, feedType}) => {
 			}
 		},
 		onSuccess: (updatedLikes) => {
-			// this is not the best UX, bc it will refetch all posts
-			// queryClient.invalidateQueries({ queryKey: ["posts"] });
-			// instead, update the cache directly for that post
-				queryClient.setQueryData(["posts", feedType], (oldData) => {
-					if (!oldData || !Array.isArray(oldData)) return [];
 			
-					return oldData.map((p) => {
-						if (p._id === post._id) {
-							return { ...p, likes: updatedLikes };
-						}
-						return p;
-					});
-				});
-			},
+			queryClient.setQueryData(["posts", feedType, username, userId], (oldData) => {
+			  
+			  if (!oldData || !Array.isArray(oldData)) {
+				return [];
+			  }
+			  
+			  return oldData.map((p) => {
+				if (p._id === post._id) {
+				  return { ...p, likes: updatedLikes };
+				}
+				return p;
+			  });
+			});
+		  },
 			
 		onError: (error) => {
 			toast.error(error.message);
@@ -105,7 +106,7 @@ const Post = ({ post, feedType}) => {
 			setComment("");
 			
 			// Optimistically update the modal's comments
-			queryClient.setQueryData(["posts", feedType], (oldData) => {
+			queryClient.setQueryData(["posts", feedType, username, userId], (oldData) => {
 				if (!oldData || !Array.isArray(oldData)) return oldData;
 				
 				return oldData.map((p) => {
@@ -159,7 +160,7 @@ const Post = ({ post, feedType}) => {
 				<div className='flex flex-col flex-1'>
 					<div className='flex gap-2 items-center'>
 						<Link to={`/profile/${postOwner.username}`} className='font-bold'>
-							{postOwner.fullName}
+							{postOwner.fullname}
 						</Link>
 						<span className='text-gray-700 flex gap-1 text-sm'>
 							<Link to={`/profile/${postOwner.username}`}>@{postOwner.username}</Link>

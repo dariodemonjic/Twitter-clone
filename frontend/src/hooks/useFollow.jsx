@@ -12,6 +12,7 @@ const useFollow = () => {
                 })
                 const data = await res.json();
                 if(!res.ok) throw new Error (data.error || "Something went wrong");
+                console.log("useFollow", data);
                 return data;
                 
             } catch (error) {

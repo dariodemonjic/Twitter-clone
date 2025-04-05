@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import Posts from "../../components/common/Posts";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
 import EditProfileModal from "./EditProfileModal";
+import toast from "react-hot-toast";
 
 import { POSTS } from "../../utils/db/dummy";
 
@@ -11,10 +12,13 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date";
+import useFollow from "../../hooks/useFollow";
 
 const ProfilePage = () => {
+
+	const queryClient = useQueryClient();
 	const [coverImg, setCoverImg] = useState(null);
 	const [profileImg, setProfileImg] = useState(null);
 	const [feedType, setFeedType] = useState("posts");
@@ -22,12 +26,47 @@ const ProfilePage = () => {
 	const coverImgRef = useRef(null);
 	const profileImgRef = useRef(null);
 
-	const isMyProfile = false;
-
+	
 	const {username} = useParams();
-	
-	
-	const {data:user, isLoading, isRefetching} = useQuery({
+	const {followMutation, isPending} = useFollow();
+	const {data: authUser} = useQuery({queryKey: ["authUser"]});
+
+	const {mutate: updateUserProfile, isPending: isUpdatingProfile} = useMutation({
+		mutationFn: async () => {
+			try {
+				const res = await fetch ("/api/users/update", {
+					method: "POST",
+					headers: {
+						"Content-Type" : "application/json",
+					},
+					body: JSON.stringify({
+						coverImg, 
+						profileImg
+					}),
+				})
+
+				const data = await res.json();
+				if(!res.ok) throw error (data.json || "Something went wrong");
+
+				return data;
+				
+			} catch (error) {
+				throw new Error(error);
+			}
+		},
+		onSuccess : () => {
+			
+			toast.success("Post updated successuflly");
+			 Promise.all([
+				queryClient.invalidateQueries({ queryKey: ["authUser"] }),
+				queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
+			  ]);
+			
+		}
+
+	})	
+
+	const {data:user, isLoading, isRefetching} = useQuery({ //data of the userProfile that we clicked
 		queryKey:["userProfile", username],
 		queryFn: async () => {
 			try {
@@ -41,7 +80,6 @@ const ProfilePage = () => {
 			}
 		}
 	})
-
 	
 
 	const handleImgChange = (e, state) => {
@@ -55,6 +93,10 @@ const ProfilePage = () => {
 			reader.readAsDataURL(file);
 		}
 	};
+
+	const isMyProfile = authUser?._id === user?._id || false;
+	const isCurrentUserFollowing = authUser?.following.includes(user?._id); //if authihicated user is following user whos profile is on. Also makes sure we updater follow on follow on update beacause our useFollow hook invalides authUser CACHE
+	console.log("authUser", authUser);
 
 	return (
 		<>
@@ -70,7 +112,7 @@ const ProfilePage = () => {
 									<FaArrowLeft className='w-4 h-4' />
 								</Link>
 								<div className='flex flex-col'>
-									<p className='font-bold text-lg'>{user?.fullName}</p>
+									<p className='font-bold text-lg'>{user?.fullname}</p>
 									<span className='text-sm text-slate-500'>{POSTS?.length} posts</span>
 								</div>
 							</div>
@@ -118,28 +160,33 @@ const ProfilePage = () => {
 								</div>
 							</div>
 							<div className='flex justify-end px-4 mt-5'>
-								{isMyProfile && <EditProfileModal />}
+								{isMyProfile && <EditProfileModal authUser={authUser}  />}
 								{!isMyProfile && (
 									<button
 										className='btn btn-outline rounded-full btn-sm'
-										onClick={() => alert("Followed successfully")}
+										onClick={(e) => {
+											e.preventDefault();
+											followMutation(user._id);
+										}}
 									>
-										Follow
+										{isPending && "Loading..."}
+										{!isPending && isCurrentUserFollowing && "Unfollow"}
+										{!isPending && !isCurrentUserFollowing &&  "Follow"}
 									</button>
 								)}
 								{(coverImg || profileImg) && (
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
-										onClick={() => alert("Profile updated successfully")}
+										onClick={() => updateUserProfile()}
 									>
-										Update
+										{isUpdatingProfile ? "Updating..." : "Update"}
 									</button>
 								)}
 							</div>
 
 							<div className='flex flex-col gap-4 mt-14 px-4'>
 								<div className='flex flex-col'>
-									<span className='font-bold text-lg'>{user?.fullName}</span>
+									<span className='font-bold text-lg'>{user?.fullname}</span>
 									<span className='text-sm text-slate-500'>@{user?.username}</span>
 									<span className='text-sm my-1'>{user?.bio}</span>
 								</div>
@@ -150,12 +197,12 @@ const ProfilePage = () => {
 											<>
 												<FaLink className='w-3 h-3 text-slate-500' />
 												<a
-													href='https://youtube.com/@asaprogrammer_'
+													href= {user?.link}
 													target='_blank'
 													rel='noreferrer'
 													className='text-sm text-blue-500 hover:underline'
 												>
-													youtube.com/@asaprogrammer_
+													{user?.link}
 												</a>
 											</>
 										</div>
@@ -206,5 +253,7 @@ const ProfilePage = () => {
 			</div>
 		</>
 	);
+
+
 };
 export default ProfilePage;
