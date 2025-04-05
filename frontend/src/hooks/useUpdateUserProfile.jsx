@@ -5,7 +5,7 @@ const userUpdateUserProfile = () => {
 
     const queryClient = useQueryClient()
 
-    const {mutate: updateUserProfile, isPending: isUpdatingProfile} = useMutation({
+    const {mutateAsync: updateUserProfile, isPending: isUpdatingProfile} = useMutation({
 		mutationFn: async (formData) => {
 			try {
 				const res = await fetch ("/api/users/update", {
@@ -17,12 +17,12 @@ const userUpdateUserProfile = () => {
 				})
 
 				const data = await res.json();
-				if(!res.ok) throw error (data.json || "Something went wrong");
+				if(!res.ok) throw new Error (data.error || "Something went wrong");
 
 				return data;
 				
 			} catch (error) {
-				throw new Error(error);
+				throw new Error(error.message);
 			}
 		},
 		onSuccess : () => {
@@ -32,7 +32,10 @@ const userUpdateUserProfile = () => {
 				queryClient.invalidateQueries({ queryKey: ["authUser"] }),
 				queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
 			  ]);
-		}
+		},
+        onError:  (error) => {
+            toast.error(error.message);
+        }
 
 	})
     

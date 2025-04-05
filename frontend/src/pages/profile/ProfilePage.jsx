@@ -141,7 +141,14 @@ const ProfilePage = () => {
 								{(coverImg || profileImg) && (
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
-										onClick={() => updateUserProfile({coverImg, profileImg})}
+										onClick={async () => {
+											 await updateUserProfile({coverImg, profileImg});
+											 setCoverImg(null);
+											 setProfileImg(null);
+
+											 //update not only appears when we select  cover or profile image
+											
+										}}
 									>
 										{isUpdatingProfile ? "Updating..." : "Update"}
 									</button>

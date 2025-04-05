@@ -17,7 +17,7 @@ const NotificationPage = () => {
 			try {
 				const res = await fetch ("/api/notifications/", {
 					method : "GET"
-				})
+				});
 				const data = await res.json();
 				if(!res.ok) throw new Error(data.error|| "Something went wrong");
 				console.log(data);
@@ -29,29 +29,27 @@ const NotificationPage = () => {
 		},
 	});
 
-	const {mutate: deleteAllNotifications } = useMutation ({
+	const { mutate: deleteAllNotifications } = useMutation({
 		mutationFn: async () => {
-			try {
-				const res = await fetch ("api/notifications/", {
-					method: "DELETE"
-				});
-				const data = await res.json();
-				if(!res.ok) throw new Error (data.error || "Something went wrong")
-				return data;
-				
-			} catch (error) {
-				throw new Error(error);
-			}
-			
+		  try {
+			const res = await fetch("/api/notifications/", {
+			  method: "DELETE"
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || "Something went wrong");
+			return data;
+		  } catch (error) {
+			throw new Error(error);
+		  }
 		},
-		onSuccess : () => {
-			toast.success("Notifications deleted successfully");
-			queryClient.invalidateQueries({ queryKey: ["notifications"] });
+		onSuccess: () => {
+		  toast.success("Notifications deleted successfully");
+		  queryClient.invalidateQueries({ queryKey: ["notifications"] });
 		},
-		onError :() => {
-			toast.error(error.message);
+		onError: (error) => {  // Add the error parameter here
+		  toast.error(error.message);
 		}
-	});
+	  });
 	
 
 	return (
@@ -68,7 +66,7 @@ const NotificationPage = () => {
 							className='dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52'
 						>
 							<li>
-								<a onClick={deleteAllNotifications}>Delete all notifications</a>
+								<a onClick= {() => deleteAllNotifications()}>Delete all notifications</a>
 							</li>
 						</ul>
 					</div>

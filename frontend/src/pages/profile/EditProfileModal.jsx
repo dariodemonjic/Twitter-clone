@@ -49,7 +49,7 @@ const EditProfileModal = ({authUser}) => {
 						className='flex flex-col gap-4'
 						onSubmit={(e) => {
 							e.preventDefault();
-							updateUserProfile(formData);
+							 updateUserProfile(formData);
 						}}
 					>
 						<div className='flex flex-wrap gap-2'>
