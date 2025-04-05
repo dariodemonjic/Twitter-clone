@@ -1,5 +1,6 @@
-Some Features:
  Tech Stack: React.js, MongoDB, Node.js, Express, Tailwind
+
+ Some Features:
  Authentication with JSONWEBTOKENS (JWT)
  React Query for Data Fetching, Caching etc.
  Suggested Users to Follow
